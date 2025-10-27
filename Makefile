@@ -18,12 +18,12 @@ build:
 	CGO_ENABLED=0 \
 	GOOS=linux \
 	GOARCH=amd64 \
-	go build -o supanova-file-cleaner .
+	go build -o go-app .
 
 docker/local-build:
-	DOCKER_BUILDKIT=1 docker build -t supanova-file-cleaner:local .
+	DOCKER_BUILDKIT=1 docker build -t go-app:local .
 
 docker/ci-build:
 	DOCKER_BUILDKIT=1 docker build \
-	-t supanova-file-cleaner:latest \
-	-t supanova-file-cleaner:$(GIT_HASH) .
+	-t go-app:latest \
+	-t go-app:$(GIT_HASH) .

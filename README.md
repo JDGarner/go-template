@@ -1,6 +1,6 @@
-# Supanova File Cleaner
+# Go Template
 
-Go service that runs periodically to remove unused files from Supanova learning platform S3 bucket
+Template for a Go service
 
 Setup:
 ```

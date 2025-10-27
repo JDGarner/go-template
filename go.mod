@@ -1,4 +1,4 @@
-module github.com/supanova-rp/supanova-file-cleaner
+module github.com/JDGarner/go-template
 
 go 1.25.3
 

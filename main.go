@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/JDGarner/go-template/internal/config"
+	"github.com/JDGarner/go-template/internal/server"
 	"github.com/JDGarner/go-template/internal/store"
 )
 
@@ -42,9 +43,24 @@ func run() error {
 	}
 	defer db.Close()
 
-	// TODO: start http server, use err group?
+	svr := server.New(db, cfg.Port)
+	serverErr := make(chan error, 1)
 
-	<-ctx.Done() // Blocks until signal received (e.g. by ctrl-C or process killed)
+	go func() {
+		serverErr <- svr.Start()
+	}()
 
-	return nil
+	select {
+	case <-ctx.Done(): // Blocks until server error OR signal received (e.g. by ctrl-C or process killed)
+		slog.Info("context cancelled")
+	case svrErr := <-serverErr:
+		err = svrErr
+	}
+
+	shutdownErr := svr.Stop()
+	if shutdownErr != nil {
+		slog.Error("server shutdown error", slog.Any("error", shutdownErr))
+	}
+
+	return err
 }

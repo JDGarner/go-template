@@ -2,9 +2,11 @@ package store
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/JDGarner/go-template/internal/store/sqlc"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -37,4 +39,8 @@ func NewStore(ctx context.Context, dbUrl string) (*Store, error) {
 
 func (s *Store) Close() {
 	s.pool.Close()
+}
+
+func IsNotFoundErr(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
 }

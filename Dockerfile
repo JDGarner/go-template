@@ -27,5 +27,3 @@ COPY --from=builder /app/go-app /app/go-app
 USER appuser
 
 ENTRYPOINT ["/app/go-app"]
-
-# EXPOSE 3000

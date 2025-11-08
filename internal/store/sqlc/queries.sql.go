@@ -7,28 +7,17 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getDummyItems = `-- name: GetDummyItems :many
-SELECT id, name FROM dummy
+const getDummyItem = `-- name: GetDummyItem :one
+SELECT id, name FROM dummy WHERE id = $1
 `
 
-func (q *Queries) GetDummyItems(ctx context.Context) ([]Dummy, error) {
-	rows, err := q.db.Query(ctx, getDummyItems)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Dummy
-	for rows.Next() {
-		var i Dummy
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetDummyItem(ctx context.Context, id pgtype.UUID) (Dummy, error) {
+	row := q.db.QueryRow(ctx, getDummyItem, id)
+	var i Dummy
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }

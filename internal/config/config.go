@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	Port        string
 	DatabaseURL string
 	LogLevel    slog.Level
 }
@@ -25,6 +26,11 @@ func ParseEnv() (*Config, error) {
 	// in at runtime via docker run command/docker-compose
 	_ = godotenv.Load()
 
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		return nil, errors.New("SERVER_PORT environment variable is not set")
+	}
+
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
 		return nil, errors.New("DATABASE_URL environment variable is not set")
@@ -40,6 +46,7 @@ func ParseEnv() (*Config, error) {
 	}
 
 	return &Config{
+		Port:        port,
 		DatabaseURL: databaseURL,
 		LogLevel:    logLevel,
 	}, nil

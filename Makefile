@@ -30,3 +30,7 @@ docker/ci-build:
 	DOCKER_BUILDKIT=1 docker build \
 	-t go-app:latest \
 	-t go-app:$(GIT_HASH) .
+
+# To run docker-compose without the go app (if you want to run go app not in docker)
+docker-compose/up-local:
+	docker-compose up -d postgres

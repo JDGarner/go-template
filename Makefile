@@ -17,6 +17,13 @@ lint/run:
 sqlc:
 	go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0 generate -f internal/store/sqlc.yaml
 
+migrate/create:
+	@if [ -z "$(name)" ]; then \
+		echo "Usage: make migrate/create name=<migration_name>"; \
+		exit 1; \
+	fi
+	migrate create -ext sql -dir internal/store/migrations -seq $(name)
+
 build:
 	CGO_ENABLED=0 \
 	GOOS=linux \
@@ -30,7 +37,3 @@ docker/ci-build:
 	DOCKER_BUILDKIT=1 docker build \
 	-t go-app:latest \
 	-t go-app:$(GIT_HASH) .
-
-# To run docker-compose without the go app (if you want to run go app not in docker)
-docker-compose/up-local:
-	docker-compose up -d postgres

@@ -31,6 +31,11 @@ func NewStore(ctx context.Context, dbUrl string) (*Store, error) {
 		return nil, fmt.Errorf("failed to ping db: %v", err)
 	}
 
+	err = runMigrations(dbUrl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to run migrations: %v", err)
+	}
+
 	return &Store{
 		pool:    pool,
 		Queries: sqlc.New(pool),

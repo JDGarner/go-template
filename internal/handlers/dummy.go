@@ -5,21 +5,16 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/JDGarner/go-template/internal/store"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
-type DummyHandler struct {
-	Store *store.Store
-}
-
 type RequestParams struct {
 	ID string `param:"id" validate:"required"`
 }
 
-func (h *DummyHandler) GetItem(e echo.Context) error {
+func (h *Handlers) GetItem(e echo.Context) error {
 	var params RequestParams
 	if err := e.Bind(&params); err != nil {
 		return err

@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -26,28 +27,28 @@ func ParseEnv() (*Config, error) {
 	// in at runtime via docker run command/docker-compose
 	_ = godotenv.Load()
 
-	port := os.Getenv("SERVER_PORT")
-	if port == "" {
-		return nil, errors.New("SERVER_PORT environment variable is not set")
+	envVars := map[string]string{
+		"SERVER_PORT":  "",
+		"DATABASE_URL": "",
+		"LOG_LEVEL":    "",
 	}
 
-	databaseURL := os.Getenv("DATABASE_URL")
-	if databaseURL == "" {
-		return nil, errors.New("DATABASE_URL environment variable is not set")
+	for key := range envVars {
+		value := os.Getenv(key)
+		if value == "" {
+			return nil, fmt.Errorf("%s environment variable is not set", key)
+		}
+		envVars[key] = value
 	}
 
-	logLevelString := os.Getenv("LOG_LEVEL")
-	if logLevelString == "" {
-		return nil, errors.New("LOG_LEVEL environment variable is not set")
-	}
-	logLevel, ok := logLevelMap[logLevelString]
+	logLevel, ok := logLevelMap[envVars["LOG_LEVEL"]]
 	if !ok {
 		return nil, errors.New("LOG_LEVEL should be one of debug|info|warning|error")
 	}
 
 	return &Config{
-		Port:        port,
-		DatabaseURL: databaseURL,
+		Port:        envVars["SERVER_PORT"],
+		DatabaseURL: envVars["DATABASE_URL"],
 		LogLevel:    logLevel,
 	}, nil
 }

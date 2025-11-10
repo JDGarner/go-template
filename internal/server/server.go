@@ -10,6 +10,7 @@ import (
 	"github.com/JDGarner/go-template/internal/store"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 const (
@@ -24,7 +25,16 @@ type Server struct {
 func New(s *store.Store, port string) *Server {
 	e := echo.New()
 	e.Validator = &customValidator{validator: validator.New()}
-	h := &handlers.DummyHandler{
+
+	// limits each unique IP to 60 requests per minute with a burst of 120.
+	config := middleware.NewRateLimiterMemoryStoreWithConfig(middleware.RateLimiterMemoryStoreConfig{
+		Rate:      60,
+		Burst:     120,
+		ExpiresIn: time.Minute,
+	})
+	e.Use(middleware.RateLimiter(config))
+
+	h := &handlers.Handlers{
 		Store: s,
 	}
 	registerRoutes(e, h)
@@ -52,7 +62,8 @@ func (s *Server) Stop() error {
 	return s.echo.Shutdown(shutdownCtx)
 }
 
-func registerRoutes(e *echo.Echo, h *handlers.DummyHandler) {
+func registerRoutes(e *echo.Echo, h *handlers.Handlers) {
+	e.GET("/health", h.HealthCheck)
 	e.GET("/item/:id", h.GetItem)
 }
 

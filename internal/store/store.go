@@ -46,6 +46,10 @@ func (s *Store) Close() {
 	s.pool.Close()
 }
 
+func (s *Store) Ping(ctx context.Context) error {
+	return s.pool.Ping(ctx)
+}
+
 func IsNotFoundErr(err error) bool {
 	return errors.Is(err, pgx.ErrNoRows)
 }

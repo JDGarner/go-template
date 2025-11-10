@@ -22,8 +22,8 @@ RUN addgroup -g 1000 -S appgroup && adduser -u 1000 -S appuser -G appgroup
 RUN mkdir /app && chown appuser:appgroup /app
 WORKDIR /app
 
-COPY --from=builder /app/go-app /app/go-app
+COPY --from=builder /app/go-template /app/go-template
 
 USER appuser
 
-ENTRYPOINT ["/app/go-app"]
+ENTRYPOINT ["/app/go-template"]

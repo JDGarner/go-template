@@ -1,4 +1,6 @@
 GIT_HASH := $(shell git rev-parse --short HEAD)
+DOCKER_USER := jdgarner
+IMAGE_NAME := go-template
 
 dep:
 	go mod download
@@ -14,6 +16,9 @@ lint/install:
 lint/run:
 	bin/golangci-lint run --config .golangci.yml
 
+test:
+	go test ./...
+
 sqlc:
 	go run github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0 generate -f internal/store/sqlc.yaml
 
@@ -28,12 +33,14 @@ build:
 	CGO_ENABLED=0 \
 	GOOS=linux \
 	GOARCH=amd64 \
-	go build -o go-app .
+	go build -o go-template .
 
 docker/local-build:
-	DOCKER_BUILDKIT=1 docker build -t go-app:local .
+	DOCKER_BUILDKIT=1 docker buildx build \
+	-t $(DOCKER_USER)/$(IMAGE_NAME):local .
 
 docker/ci-build:
-	DOCKER_BUILDKIT=1 docker build \
-	-t go-app:latest \
-	-t go-app:$(GIT_HASH) .
+	DOCKER_BUILDKIT=1 docker buildx build \
+	--platform linux/amd64 \
+	-t $(DOCKER_USER)/$(IMAGE_NAME):latest \
+	-t $(DOCKER_USER)/$(IMAGE_NAME):$(GIT_HASH) .

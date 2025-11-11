@@ -6,15 +6,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/JDGarner/go-template/internal/handlers"
-	"github.com/JDGarner/go-template/internal/store"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
+	"github.com/JDGarner/go-template/internal/handlers"
+	"github.com/JDGarner/go-template/internal/store"
 )
 
 const (
-	serverTimeout = 10 * time.Second
+	serverTimeout    = 10 * time.Second
+	serverRateLimit  = 60
+	serverBurstLimit = 120
 )
 
 type Server struct {
@@ -28,8 +31,8 @@ func New(s *store.Store, port string) *Server {
 
 	// limits each unique IP to 60 requests per minute with a burst of 120.
 	config := middleware.NewRateLimiterMemoryStoreWithConfig(middleware.RateLimiterMemoryStoreConfig{
-		Rate:      60,
-		Burst:     120,
+		Rate:      serverRateLimit,
+		Burst:     serverBurstLimit,
 		ExpiresIn: time.Minute,
 	})
 	e.Use(middleware.RateLimiter(config))

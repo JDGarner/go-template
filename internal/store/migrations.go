@@ -22,7 +22,7 @@ func runMigrations(dbUrl string) error {
 	}
 
 	db := stdlib.OpenDB(*cfg)
-	defer db.Close()
+	defer db.Close() //nolint:errcheck
 
 	dbDriver, err := pgxv5.WithInstance(db, &pgxv5.Config{})
 	if err != nil {
@@ -40,6 +40,9 @@ func runMigrations(dbUrl string) error {
 		"pgx",
 		dbDriver,
 	)
+	if err != nil {
+		return fmt.Errorf("failed to create migrate instance: %v", err)
+	}
 
 	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {

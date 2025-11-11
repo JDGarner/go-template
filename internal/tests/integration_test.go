@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"testing"
 
-	"github.com/JDGarner/go-template/internal/store/sqlc"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+
+	"github.com/JDGarner/go-template/internal/store/sqlc"
 )
 
 func TestIntegration(t *testing.T) {
@@ -42,12 +44,8 @@ func TestIntegration(t *testing.T) {
 			t.Fatalf("failed to insert test data: %v", err)
 		}
 
-		url := fmt.Sprintf("%s/item/%s", testResources.AppURL, id.String())
-
-		resp, err := http.Get(url)
-		if err != nil {
-			t.Fatalf("failed to make request: %v", err)
-		}
+		resp := getItem(t, testResources.AppURL, id)
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusOK {
 			t.Fatalf("expected status 200, got %d", resp.StatusCode)
@@ -76,15 +74,34 @@ func TestIntegration(t *testing.T) {
 	t.Run("returns not found error", func(t *testing.T) {
 		nonExistantID := uuid.New()
 
-		url := fmt.Sprintf("%s/item/%s", testResources.AppURL, nonExistantID.String())
-
-		resp, err := http.Get(url)
-		if err != nil {
-			t.Fatalf("failed to make request: %v", err)
-		}
+		resp := getItem(t, testResources.AppURL, nonExistantID)
+		defer resp.Body.Close() //nolint:errcheck
 
 		if resp.StatusCode != http.StatusNotFound {
 			t.Fatalf("expected status 404, got %d", resp.StatusCode)
 		}
 	})
+}
+
+func getItem(t *testing.T, baseURL string, id uuid.UUID) *http.Response {
+	t.Helper()
+
+	urlString := fmt.Sprintf("%s/item/%s", baseURL, id.String())
+	parsedURL, err := url.Parse(urlString)
+	if err != nil {
+		t.Fatalf("failed to parse URL: %v", err)
+	}
+
+	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, parsedURL.String(), http.NoBody)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("failed to make request: %v", err)
+	}
+
+	return resp
 }

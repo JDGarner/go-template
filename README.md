@@ -14,6 +14,7 @@
 - `docker-compose.yml`
 - `golangci.yml`
 - `internal/tests/docker-compose.yml`
+- `internal/store/migrations/*.sql`
 
 And:
 - Update `store/schema.sql` with a new schema

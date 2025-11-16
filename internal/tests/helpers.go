@@ -25,9 +25,6 @@ func setupTestResources(ctx context.Context, t *testing.T) (*TestResources, erro
 	}
 
 	err = composeStack.Up(ctx, compose.Wait(true))
-	if err != nil {
-		return nil, fmt.Errorf("failed to start compose stack: %w", err)
-	}
 	defer func() {
 		// handle cleanup here if setup fails halfway through
 		if err != nil {
@@ -37,6 +34,9 @@ func setupTestResources(ctx context.Context, t *testing.T) (*TestResources, erro
 			}
 		}
 	}()
+	if err != nil {
+		return nil, fmt.Errorf("failed to start compose stack: %w", err)
+	}
 
 	postgresURL, err := getPostgresURL(ctx, composeStack)
 	if err != nil {
